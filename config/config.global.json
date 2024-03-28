@@ -4,10 +4,14 @@
         "URL": "/API/V1"
     },
     "ROUTES":{
-        "LOAD": ["exemple", "notFound"]
+        "LOAD": ["ingredient", "notFound"]
     },
     "CORS": {
         "origin": "http://example.com",
         "optionsSuccessStatus": 200
+    },
+    "SEQUELIZE": {
+        "dialect": "sqlite",
+        "storage": "database/SavEat.sqlite"
     }
 }

@@ -2,7 +2,7 @@
 const express = require("express");
 const path = require('path');
 const fs = require('fs');
-const cors = require('cors')
+const cors = require('cors');
 
 // GLOBAL VAR
 global.config = {
@@ -34,8 +34,8 @@ fs.readdir(routesPath, (err, routesFiles) => {
       : (routesNotLoaded.push(routeName), false)
     })
 
-    console.log('\x1b[32m', `\n✅ Routes successfully loaded: ${routesLoaded}`, '\x1b[0m');
-    routesNotLoaded.length && console.warn('\x1b[33m', `\n🚨 Routes not loaded: ${routesNotLoaded}`, '\x1b[0m')
+    console.log('\x1b[32m', `\n✅ Routes successfully loaded: ${routesLoaded}`, '\x1b[0m\n');
+    routesNotLoaded.length && console.warn('\x1b[33m', `\n🚨 Routes not loaded: ${routesNotLoaded}`, '\x1b[0m\n')
 
   } catch (err) {
     console.error(err);
@@ -48,3 +48,8 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log('\x1b[35m', `\n🚀 Server is running on port ${PORT}.`, '\x1b[0m');
 });
+
+// -- API db initialization
+const { initialize } = require('./services/service.sequelize');
+
+initialize();

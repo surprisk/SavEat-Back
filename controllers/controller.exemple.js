@@ -1,5 +1,9 @@
 // -- Welcome page
-exports.welcome = (req, res) => {
+const { User } = require('../services/service.schematics');
 
-    res.status(201).send({"message": "Welcome on your new API !"});
+exports.welcome = async(req, res) => {
+    const jane = await Schematics.User.create({
+        username: 'janedoe',
+        birthday: new Date(1980, 6, 20),
+      });
 }
