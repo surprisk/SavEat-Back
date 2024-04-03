@@ -3,7 +3,7 @@ module.exports = app => {
     const router = require('express').Router();
 
     // -- 404 Not found
-    router.get("*", controller.notFound);
+    router.use("*", controller.notFound);
 
     // -- Add URL to router
     app.use(`${config.global.api.url}/`, router);

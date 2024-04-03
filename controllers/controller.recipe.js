@@ -1,13 +1,13 @@
 // -- Welcome page
 const { schematics } = require('../services/service.sequelize');
-const { Ingredient } = schematics;
-const allowedFields = ['name', 'description', 'image']
+const { Recipe } = schematics;
+const allowedFields = ['name', 'description']
 
 exports.all = (req, res) => {
-  Ingredient.findAll()
-  .then(i => {
+  Recipe.findAll()
+  .then(r => {
     res.status(201).send({
-      ingredients: i
+      Recipes: r
     })
   })
   .catch(e => {
@@ -18,12 +18,12 @@ exports.all = (req, res) => {
 }
 
 exports.create = (req, res) => {
-  Ingredient.create(
+  Recipe.create(
     {...req.body}, 
     { fields: allowedFields })
-    .then(i => {
+    .then(r => {
       res.status(201).send({
-        ingredient: i.dataValues
+        recipe: r.dataValues
       })
     })
     .catch(e => {
@@ -34,15 +34,15 @@ exports.create = (req, res) => {
 }
 
 exports.read = (req, res) => {
-  Ingredient.findOne({
+  Recipe.findOne({
     where: {
       id: req.params.id
     }
   })
-  .then(i => {
-    res.status(i ? 201 : 404).send(i ? 
+  .then(r => {
+    res.status(r ? 201 : 404).send(r ? 
       {
-        ingredient: i,
+        recipe: r,
         message: "Read succeful"
       }: 
       {
@@ -57,16 +57,16 @@ exports.read = (req, res) => {
 }
 
 exports.update = (req, res) => {
-  Ingredient.update({ ...req.body }, {
+  Recipe.update({ ...req.body }, {
     fields: allowedFields,
     where: {
       id: req.params.id
     }
   })
-  .then(i => {
+  .then(r => {
 
-    return i[0] > 0 ?
-      Ingredient.findOne({
+    return r[0] > 0 ?
+      Recipe.findOne({
         where: {
           id: req.params.id
         }
@@ -87,13 +87,13 @@ exports.update = (req, res) => {
 }
 
 exports.delete = (req, res) => {
-  Ingredient.destroy({
+  Recipe.destroy({
     where: {
       id: req.params.id
     }
   })
-  .then(i => {
-    const deleted = i > 0;
+  .then(r => {
+    const deleted = r > 0;
 
     return res.status(deleted ? 201 : 404).send({
       message: deleted ? "Delete succeful" : "Resource not found"

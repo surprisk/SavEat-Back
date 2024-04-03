@@ -1,13 +1,13 @@
 // -- Welcome page
 const { schematics } = require('../services/service.sequelize');
-const { Ingredient } = schematics;
-const allowedFields = ['name', 'description', 'image']
+const { Unit } = schematics;
+const allowedFields = ['name', 'label']
 
 exports.all = (req, res) => {
-  Ingredient.findAll()
-  .then(i => {
+  Unit.findAll()
+  .then(u => {
     res.status(201).send({
-      ingredients: i
+      Units: u
     })
   })
   .catch(e => {
@@ -18,12 +18,12 @@ exports.all = (req, res) => {
 }
 
 exports.create = (req, res) => {
-  Ingredient.create(
+  Unit.create(
     {...req.body}, 
     { fields: allowedFields })
-    .then(i => {
+    .then(u => {
       res.status(201).send({
-        ingredient: i.dataValues
+        unit: u.dataValues
       })
     })
     .catch(e => {
@@ -34,15 +34,15 @@ exports.create = (req, res) => {
 }
 
 exports.read = (req, res) => {
-  Ingredient.findOne({
+  Unit.findOne({
     where: {
       id: req.params.id
     }
   })
-  .then(i => {
-    res.status(i ? 201 : 404).send(i ? 
+  .then(u => {
+    res.status(u ? 201 : 404).send(u ? 
       {
-        ingredient: i,
+        unit: u,
         message: "Read succeful"
       }: 
       {
@@ -57,16 +57,16 @@ exports.read = (req, res) => {
 }
 
 exports.update = (req, res) => {
-  Ingredient.update({ ...req.body }, {
+  Unit.update({ ...req.body }, {
     fields: allowedFields,
     where: {
       id: req.params.id
     }
   })
-  .then(i => {
+  .then(u => {
 
-    return i[0] > 0 ?
-      Ingredient.findOne({
+    return u[0] > 0 ?
+      Unit.findOne({
         where: {
           id: req.params.id
         }
@@ -87,13 +87,13 @@ exports.update = (req, res) => {
 }
 
 exports.delete = (req, res) => {
-  Ingredient.destroy({
+  Unit.destroy({
     where: {
       id: req.params.id
     }
   })
-  .then(i => {
-    const deleted = i > 0;
+  .then(u => {
+    const deleted = u > 0;
 
     return res.status(deleted ? 201 : 404).send({
       message: deleted ? "Delete succeful" : "Resource not found"

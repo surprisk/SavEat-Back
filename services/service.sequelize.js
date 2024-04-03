@@ -4,15 +4,6 @@ exports.db = new Sequelize(config.credentials.sequelize.connection);
 
 // Schematics
 exports.schematics = {
-    Setting: this.db.define('Setting', { 
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true
-        },
-        name: DataTypes.STRING,
-        value: DataTypes.JSON
-    }),
     User: this.db.define('User', {
         id: {
             type: DataTypes.UUID,

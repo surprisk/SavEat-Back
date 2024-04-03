@@ -1,5 +1,5 @@
 module.exports = app => {
-    const controller = require("../controllers/controller.recipe");
+    const controller = require("../controllers/controller.unit");
     const router = require('express').Router();
 
     router.get("/", controller.all);
@@ -9,5 +9,5 @@ module.exports = app => {
     router.delete("/:id", controller.delete);
 
     // -- Add URL to router
-    app.use(`${config.global.api.url}/recipe`, router);
+    app.use(`${config.global.api.url}/unit`, router);
 }
