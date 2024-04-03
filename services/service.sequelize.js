@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
+const { generateSalt, generateHash } = require('./service.crypto');
 
 exports.db = new Sequelize(config.credentials.sequelize.connection);
 
@@ -21,8 +22,14 @@ exports.schematics = {
             unique: true,
         },
         password: {
-            type: DataTypes.STRING,
+            type: DataTypes.VIRTUAL,
             allowNull: false
+        },
+        hash: {
+            type: DataTypes.STRING,
+        },
+        salt: {
+            type: DataTypes.STRING,
         }
     }),
     Ingredient: this.db.define('Ingredient', {
@@ -111,6 +118,16 @@ Ingredient.Category = Ingredient.belongsToMany(Category, { through: 'Category_In
 Category.Ingredient = Category.belongsToMany(Ingredient, { through: 'Category_Ingredient' });
 
 Unit.Quantity = Unit.hasMany(Quantity);
+
+User.beforeCreate((user) => {
+    user.salt = generateSalt()
+    user.hash = generateHash(user.password, user.salt);
+});
+
+User.beforeUpdate((user) => {
+    user.salt = generateSalt()
+    user.hash = generateHash(user.password, user.salt);
+})
 
 
 exports.initialize = function (options) {
