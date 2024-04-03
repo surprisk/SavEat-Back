@@ -1,6 +1,7 @@
 // -- Welcome page
 const { schematics } = require('../services/service.sequelize');
 const { Category } = schematics;
+const allowedFields = ['name', 'description', 'type']
 
 exports.all = (req, res) => {
   Category.findAll()
@@ -19,7 +20,7 @@ exports.all = (req, res) => {
 exports.create = (req, res) => {
   Category.create(
     {...req.body}, 
-    { fields: ['name', 'description'] })
+    { fields: allowedFields })
     .then(c => {
       res.status(201).send({
         category: c.dataValues
@@ -52,7 +53,7 @@ exports.read = (req, res) => {
 
 exports.update = (req, res) => {
   Category.update({ ...req.body }, {
-    fields: ['name', 'description'],
+    fields: allowedFields,
     where: {
       id: req.params.id
     }

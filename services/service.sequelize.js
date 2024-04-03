@@ -99,6 +99,11 @@ exports.schematics = {
         },
         description: {
             type: DataTypes.STRING
+        },
+        type: {
+            type: DataTypes.ENUM,
+            values: ["Recipe", "Ingredient"],
+            allowNull: false
         }
     })
 }
@@ -106,40 +111,54 @@ exports.schematics = {
 const {User, Recipe, Ingredient, Category, Quantity, Unit } = this.schematics
 
 // Associations
-User.Recipe = User.hasMany(Recipe);
-
-Recipe.User = Recipe.belongsTo(User);
+Recipe.Author = Recipe.belongsTo(User, {as: 'Author'});
 Recipe.Ingredient = Recipe.belongsToMany(Ingredient, { through: Quantity });
 
 Ingredient.Recipe = Ingredient.belongsToMany(Recipe, { through: Quantity });
-Ingredient.Category = Ingredient.hasMany(Category);
+Ingredient.Category = Ingredient.belongsToMany(Category, { through: 'Category_Ingredient' });
 
-Category.Ingredient = Category.hasMany(Ingredient);
+Category.Ingredient = Category.belongsToMany(Ingredient, { through: 'Category_Ingredient' });
 
 Unit.Quantity = Unit.hasMany(Quantity);
-
-Quantity.Unit = Quantity.hasOne(Unit, {foreignKey: 'QuantityId'});
 
 
 exports.initialize = function (options) {
     return this.db.authenticate()
     .then(() => {
         console.log('\x1b[32m✅ Connection has been established successfully.', '\x1b[0m\n');
-        
-        return options.sync ? this.db.sync(options.options)
-        .then(() => {
-            console.log('\x1b[32m✅ Schematics synchronization successfully completed.', '\x1b[0m');
-            return true;
+
+        return options.drop ? 
+            this.db.drop()
+            .then(() => {
+                console.log('\x1b[32m✅ Database deletion successfully completed.', '\x1b[0m');
+
+                return true;
+            })
+            .catch((error) => {
+                console.error('\x1b[31m', '❌ Unable to delete database:', error, '\x1b[0m');
+
+                return false;
+            }) : 
+            true;
         })
-        .catch((error) => {
-            console.error('\x1b[31m', '❌ Unable to synchronize schematics:', error, '\x1b[0m');
-            return false;
-        })
-        : true
+    .then((success) => {
+        return options.sync ? 
+            this.db.sync(options.options)
+            .then(() => {
+                console.log('\x1b[32m✅ Schematics synchronization successfully completed.', '\x1b[0m');
+
+                return true;
+            })
+            .catch((error) => {
+                console.error('\x1b[31m', '❌ Unable to synchronize schematics:', error, '\x1b[0m');
+
+                return false;
+            }) :
+            success
     })
-    .then(isSync => isSync)
     .catch((error) => {
         console.error('\x1b[31m', '❌ Unable to connect to the database:', error, '\x1b[0m\n');
+        
         return false;
     })
 }
