@@ -4,7 +4,7 @@
         "URL": "/API/V1"
     },
     "ROUTES":{
-        "LOAD": ["ingredient", "notFound"]
+        "LOAD": ["ingredient", "category","notFound"]
     },
     "CORS": {
         "origin": "http://example.com",

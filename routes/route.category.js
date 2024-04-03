@@ -1,5 +1,5 @@
 module.exports = app => {
-    const controller = require("../controllers/controller.ingredient");
+    const controller = require("../controllers/controller.category");
     const router = require('express').Router();
 
     router.get("/", controller.all);
@@ -9,5 +9,5 @@ module.exports = app => {
     router.delete("/:id", controller.delete);
 
     // -- Add URL to router
-    app.use(`${config.global.API.URL}/ingredient`, router);
+    app.use(`${config.global.API.URL}/category`, router);
 }

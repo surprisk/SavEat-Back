@@ -9,7 +9,9 @@ exports.all = (req, res) => {
 }
 
 exports.create = (req, res) => {
-
+  schematics.Ingredient.create(
+    {...req.body}, 
+    { fields: ['name', 'description', 'image'] })
 }
 
 exports.read = (req, res) => {

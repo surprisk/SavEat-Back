@@ -16,7 +16,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.use(cors(config.global.CORS));
 
-// 
+// -- API db initialization
+require('./services/service.sequelize').initialize();
+
 const routesPath = path.join(__dirname, 'routes');
 fs.readdir(routesPath, (err, routesFiles) => {
 
@@ -48,8 +50,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log('\x1b[35m', `\n🚀 Server is running on port ${PORT}.`, '\x1b[0m');
 });
-
-// -- API db initialization
-const { initialize } = require('./services/service.sequelize');
-
-initialize();
