@@ -1,17 +1,19 @@
 {
-    "API":{
-        "VERSION": "V1",
-        "URL": "/API/V1"
+    "api":{
+        "version": "V1",
+        "url": "/API/V1"
     },
-    "ROUTES":{
-        "LOAD": ["ingredient", "category","notFound"]
+    "routes":{
+        "load": ["ingredient", "category","notFound"]
     },
-    "CORS": {
+    "cors": {
         "origin": "http://example.com",
         "optionsSuccessStatus": 200
     },
-    "SEQUELIZE": {
-        "dialect": "sqlite",
-        "storage": "database/SavEat.sqlite"
+    "sequelize":{
+        "initialize": {
+            "sync": false,
+            "options": {}
+        }
     }
 }

@@ -9,5 +9,5 @@ module.exports = app => {
     router.delete("/:id", controller.delete);
 
     // -- Add URL to router
-    app.use(`${config.global.API.URL}/category`, router);
+    app.use(`${config.global.api.url}/category`, router);
 }

@@ -6,5 +6,5 @@ module.exports = app => {
     router.get("*", controller.notFound);
 
     // -- Add URL to router
-    app.use(`${config.global.API.URL}/`, router);
+    app.use(`${config.global.api.url}/`, router);
 }

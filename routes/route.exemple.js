@@ -6,5 +6,5 @@ module.exports = app => {
     router.get("/", controller.welcome);
 
     // -- Add URL to router
-    app.use(`${config.global.API.URL}/exemple`, router);
+    app.use(`${config.global.api.url}/exemple`, router);
 }

@@ -8,5 +8,5 @@ module.exports = app => {
     router.post("/refresh", controller.refresh);
 
     // -- Add URL to router
-    app.use(`${config.global.API.URL}/security`, router);
+    app.use(`${config.global.api.url}/security`, router);
 }

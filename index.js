@@ -6,7 +6,8 @@ const cors = require('cors');
 
 // GLOBAL VAR
 global.config = {
-  global: require('./config/config.global.json')
+  global: require('./config/config.global.json'),
+  credentials: require('./config/config.credentials.json')
 }
 
 // MIDDLEWARE
@@ -14,10 +15,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-app.use(cors(config.global.CORS));
+app.use(cors(config.global.cors));
 
 // -- API db initialization
-require('./services/service.sequelize').initialize();
+require('./services/service.sequelize').initialize(config.global.sequelize.initialize);
 
 const routesPath = path.join(__dirname, 'routes');
 fs.readdir(routesPath, (err, routesFiles) => {
@@ -28,7 +29,7 @@ fs.readdir(routesPath, (err, routesFiles) => {
 
     const routesNotLoaded = [];
 
-    const routesLoaded = config.global.ROUTES.LOAD.filter((routeName) => {
+    const routesLoaded = config.global.routes.load.filter((routeName) => {
       const routeFullName = `route.${routeName}.js`;
 
       return routesFiles.includes(routeFullName) 
