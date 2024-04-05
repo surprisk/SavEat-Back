@@ -12,8 +12,8 @@
     },
     "sequelize":{
         "initialize": {
-            "drop": true,
-            "sync": {"force": true},
+            "drop": false,
+            "sync": false,
             "options": {}
         }
     }
