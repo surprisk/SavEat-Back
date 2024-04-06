@@ -62,7 +62,7 @@ exports.signOut = (req, res) => {
   const { authorization } = req.headers;
 
   if (!authorization) 
-    return res.status(400).send('No access token provided.');
+    return res.status(400).send({message: 'No access token provided.'});
 
   let message = 'Sign out successfully completed.';
   let code = 200;
@@ -71,6 +71,9 @@ exports.signOut = (req, res) => {
     const access = authorization.split(' ')[1];
 
     const jwtVerified = verify(access, config.credentials.jwt.token.access.secret);
+
+    if(!jwtVerified.valid)
+      return res.status(200).send({message: 'The user is not logged.'});
   
     const userUUIDIndex = connectedUsers.findIndex((uuid) => uuid == jwtVerified.payload.user.id);
   
@@ -78,8 +81,8 @@ exports.signOut = (req, res) => {
       connectedUsers.splice(userUUIDIndex, 1);
     else
       message = 'The user is not logged.'
-
-  } catch {
+  } catch(e) {
+    console.log(e)
     message = 'Internal Server Error';
     code = 500;
   } finally {
@@ -109,6 +112,9 @@ exports.refresh = (req, res) => {
   try {
     const jwtVerified = verify(refresh, config.credentials.jwt.token.refresh.secret);
 
+    if(!connectedUsers.includes(jwtVerified.payload.user.id))
+      return res.status(401).send({message: 'Not authorized to refresh token.'});
+    
     if(!jwtVerified.valid)
       throw new Error()
 
@@ -124,7 +130,7 @@ exports.refresh = (req, res) => {
     .send({ user: jwtVerified.payload.user });
 
   } catch (error) {
-    return res.status(400).send('Invalid refresh token.');
+    return res.status(400).send({message: 'Invalid refresh token.'});
   }
 
 }
