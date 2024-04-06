@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const { create } = require('./controller.user')
 const { schematics } = require('../services/service.sequelize');
 const { User } = schematics;
-const { generateHash, sign, verify, generateUUID } = require('../services/service.crypto');
+const { generateHash, sign, verify } = require('../services/service.crypto');
 
 let connectedUsers = []
 
@@ -23,12 +23,13 @@ exports.signIn = (req, res) => {
       const {id, username, email, createdAt, updatedAt} = u;
 
       const access = sign({
-        id: id,
+        user: { id, username, email, createdAt, updatedAt },
         exp: config.credentials.jwt.token.access.expiration
       }, 
       config.credentials.jwt.token.access.secret)
 
       const refresh = sign({
+        user: { id, username, email, createdAt, updatedAt },
         exp: config.credentials.jwt.token.refresh.expiration
       }, 
       config.credentials.jwt.token.refresh.secret)
@@ -36,12 +37,12 @@ exports.signIn = (req, res) => {
       if(!connectedUsers.includes(id))
         connectedUsers.push(id);
 
-      return res.status(201).send({
-        user: { id, username, email, createdAt, updatedAt },
-        tokens: {
-          access,
-          refresh
-        }
+      return res
+      .status(201)
+      .cookie('refreshToken', refresh, { httpOnly: true, sameSite: 'strict' })
+      .header('Authorization', `Bearer ${access}`)
+      .send({
+        user: { id, username, email, createdAt, updatedAt }
       })
     } else 
       return res.status(401).send({
@@ -57,21 +58,26 @@ exports.signIn = (req, res) => {
 
 exports.signUp = create({from: 'security'})
 
-exports.signOut = (req, res) => {
-  const { access } = req.body?.tokens;
+exports.signOut = (req, res) => {    
+  const { authorization } = req.headers;
+
+  if (!authorization) 
+    return res.status(400).send('No access token provided.');
 
   let message = 'Sign out successfully completed.';
   let code = 200;
   
   try {
+    const access = authorization.split(' ')[1];
+
     const jwtVerified = verify(access, config.credentials.jwt.token.access.secret);
   
-    const userUUIDIndex = connectedUsers.findIndex((uuid) => uuid == jwtVerified.payload.id);
+    const userUUIDIndex = connectedUsers.findIndex((uuid) => uuid == jwtVerified.payload.user.id);
   
     if(userUUIDIndex != -1)
       connectedUsers.splice(userUUIDIndex, 1);
     else
-      message =  'The user was already logged out.'
+      message = 'The user is not logged.'
 
   } catch {
     message = 'Internal Server Error';
@@ -84,5 +90,41 @@ exports.signOut = (req, res) => {
 }
 
 exports.refresh = (req, res) => {
+  const cookies = req.headers.cookie;
+  let refresh;
   
+  try{
+    refresh = cookies
+    .split(';')
+    .map(cookie => cookie.trim().split('='))
+    .find(cookie => cookie[0] === 'refreshToken')[1];
+
+    if (!refresh) 
+      throw new Error()
+
+  } catch {
+    return res.status(400).send({message: 'No refresh token provided.'});
+  }
+
+  try {
+    const jwtVerified = verify(refresh, config.credentials.jwt.token.refresh.secret);
+
+    if(!jwtVerified.valid)
+      throw new Error()
+
+    const access = sign({
+      user: jwtVerified.payload.user,
+      exp: config.credentials.jwt.token.access.expiration
+    }, 
+    config.credentials.jwt.token.access.secret)
+
+    return res
+    .status(200)
+    .header('Authorization', `Bearer ${access}`)
+    .send({ user: jwtVerified.payload.user });
+
+  } catch (error) {
+    return res.status(400).send('Invalid refresh token.');
+  }
+
 }
