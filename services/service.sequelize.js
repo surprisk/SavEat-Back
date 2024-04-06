@@ -1,6 +1,13 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { generateSalt, generateHash } = require('./service.crypto');
 
+const userControl = (user) => {
+    user.username = user.username.toLowerCase();
+    user.email = user.email.toLowerCase();
+    user.salt = generateSalt()
+    user.hash = generateHash(user.password, user.salt);
+}
+
 exports.db = new Sequelize(config.credentials.sequelize.connection);
 
 // Schematics
@@ -14,12 +21,18 @@ exports.schematics = {
         username: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true
+            unique: true,
+            validate: {
+                is: /^[a-zA-Z0-9]*$/i
+            }
         },
         email: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true,
+            validate: {
+                isEmail: true
+            }
         },
         password: {
             type: DataTypes.VIRTUAL,
@@ -30,6 +43,10 @@ exports.schematics = {
         },
         salt: {
             type: DataTypes.STRING,
+        }
+    }, {
+        hooks: {
+            beforeSave: userControl
         }
     }),
     Ingredient: this.db.define('Ingredient', {
@@ -118,16 +135,6 @@ Ingredient.Category = Ingredient.belongsToMany(Category, { through: 'Category_In
 Category.Ingredient = Category.belongsToMany(Ingredient, { through: 'Category_Ingredient' });
 
 Unit.Quantity = Unit.hasMany(Quantity);
-
-User.beforeCreate((user) => {
-    user.salt = generateSalt()
-    user.hash = generateHash(user.password, user.salt);
-});
-
-User.beforeUpdate((user) => {
-    user.salt = generateSalt()
-    user.hash = generateHash(user.password, user.salt);
-})
 
 
 exports.initialize = function (options) {

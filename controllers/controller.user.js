@@ -4,32 +4,47 @@ const { User } = schematics;
 const allowedFields = ['username', 'email', 'password', 'salt', 'hash']
 
 exports.all = (req, res) => {
-  User.findAll()
+  User.findAll({attributes: {exclude: ['hash', 'salt']}})
   .then(u => {
-    res.status(201).send({
+    return res.status(201).send({
       Users: u
     })
   })
   .catch(e => {
-    res.status(500).send({
+    return res.status(500).send({
       message: 'Internal Server Error'
     })
   });
 }
 
-exports.create = (req, res) => {
+exports.create = (options) => (req, res) => {
+  console.log(options)
   User.create(
     {...req.body}, 
     { fields: allowedFields })
     .then(u => {
-      res.status(201).send({
-        user: u.dataValues
+      const { id, username, email, createdAt, updatedAt } = u
+
+      return res.status(201).send({
+        user: { id, username, email, createdAt, updatedAt}
       })
     })
     .catch(e => {
-      console.log(e)
-      res.status(500).send({
-        message: 'Internal Server Error'
+      let message;
+
+      switch(e.name) {
+        case "SequelizeUniqueConstraintError": 
+          message = 'The username or e-mail address is already in use.';
+          break;
+        case "SequelizeValidationError": 
+          message = "The username or e-mail doesn't match authorized patterns.";
+          break;
+        default: message = 'Internal Server Error.';
+
+      }
+
+      return res.status(500).send({
+        message
       })
     });
 }
@@ -38,20 +53,22 @@ exports.read = (req, res) => {
   User.findOne({
     where: {
       id: req.params.id
+    },
+    attributes: { 
+      exclude: ['hash', 'salt']
     }
   })
   .then(u => {
-    res.status(u ? 201 : 404).send(u ? 
+    return res.status(u ? 201 : 404).send(u ? 
       {
-        user: u,
-        message: "Read succeful"
-      }: 
+        user: u
+      } : 
       {
         message: "Resource not found"
       })
   })
   .catch(e => {
-    res.status(500).send({
+    return res.status(500).send({
       message: 'Internal Server Error'
     })
   });
@@ -62,7 +79,8 @@ exports.update = (req, res) => {
     fields: allowedFields,
     where: {
       id: req.params.id
-    }
+    },
+    individualHooks: true
   })
   .then(u => {
 
@@ -70,20 +88,40 @@ exports.update = (req, res) => {
       User.findOne({
         where: {
           id: req.params.id
+        },
+        attributes: { 
+          exclude: ['hash', 'salt'] 
         }
       }) :
       false
 
   })
   .then(updated => {
-    return res.status(updated ? 201 : 404).send({
-      message: updated || "Resource not found"
+    return res.status(updated ? 201 : 404).send(updated ? 
+    {
+      user: updated
+    } :
+    {
+      message: "Resource not found"
     })
   })
   .catch(e => {
-    res.status(500).send({
-      message: 'Internal Server Error'
-    })
+    let message;
+
+      switch(e.name) {
+        case "SequelizeUniqueConstraintError": 
+          message = 'The username or e-mail address is already in use.';
+          break;
+        case "SequelizeValidationError": 
+          message = "The username or e-mail doesn't match authorized patterns.";
+          break;
+        default: message = 'Internal Server Error.';
+
+      }
+
+      return res.status(500).send({
+        message
+      })
   });
 }
 
@@ -96,12 +134,16 @@ exports.delete = (req, res) => {
   .then(u => {
     const deleted = u > 0;
 
-    return res.status(deleted ? 201 : 404).send({
-      message: deleted ? "Delete succeful" : "Resource not found"
-    })
+    return res.status(deleted ? 201 : 404).send(deleted ?
+      {
+        user: { id: req.params.id }
+      } :
+      {
+        message: "Resource not found"
+      })
   })
   .catch(e => {
-    res.status(500).send({
+    return res.status(500).send({
       message: 'Internal Server Error'
     })
   });

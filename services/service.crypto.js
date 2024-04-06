@@ -1,4 +1,4 @@
-const { createHmac } = require('crypto');
+const { createHmac, randomBytes, pbkdf2Sync } = require('crypto');
 const { Buffer } = require('buffer');
 
 const header = JSON.stringify({
@@ -7,9 +7,9 @@ const header = JSON.stringify({
 })
 const encodedHeader = Buffer.from(header).toString('base64url');
 
-exports.generateSalt = () => crypto.randomBytes(16).toString('hex');
+exports.generateSalt = () => randomBytes(16).toString('hex');
 
-exports.generateHash = (password, salt) => crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+exports.generateHash = (password, salt) => pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
 
 exports.sign = (payload, secret) => {
 
@@ -33,6 +33,9 @@ exports.sign = (payload, secret) => {
 }
 
 exports.verify = (token, secret) => {
+    if(!token || !secret)
+        throw new Error('One or more parameters are undefined');
+
     let [header, payload, signature] = token.split('.');
 
     const hmac = createHmac('sha512', secret);
